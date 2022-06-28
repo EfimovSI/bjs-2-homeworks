@@ -90,10 +90,9 @@ class Library {
 
     giveBookByName(bookName) {
         let book = null;
-        for (let key in this.books) {
-            if (this.books[key].name === bookName) {
-                book = this.books.splice(key, 1)[0];
-            }
+        let key = this.books.findIndex(i => i.name === bookName);
+        if (key !== -1) {
+            book = this.books.splice(key, 1)[0];
         }
         return book;
     }
