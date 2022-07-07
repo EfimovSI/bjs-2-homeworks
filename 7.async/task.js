@@ -4,16 +4,16 @@ class AlarmClock {
         this.timerId;
     }
 
-    addClock = function(alarmTime, alarmAction, timerId) {
-        if (timerId === undefined) {
+    addClock = function(alarmTime, alarmAction, id) {
+        if (id === undefined) {
             throw new Error('Невозможно идентифицировать будильник. Параметр id не передан.');
         }
 
-        if (this.alarmCollection.some(e => e.id === timerId)) {
+        if (this.alarmCollection.some(e => e.id === id)) {
             console.error('Будильник с таким id уже существует.');
         } else {
             this.alarmCollection.push({
-                id: timerId,
+                id: id,
                 time: alarmTime,
                 callback: alarmAction
             });
