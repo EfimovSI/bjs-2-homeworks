@@ -1,11 +1,11 @@
 class AlarmClock {
     constructor() {
         this.alarmCollection = [];
-        this.timerId;
+        this.timerId = null;
     }
 
-    addClock = function(alarmTime, alarmAction, id) {
-        if (id === undefined) {
+    addClock(alarmTime, alarmAction, id) {
+        if (!id) {
             throw new Error('Невозможно идентифицировать будильник. Параметр id не передан.');
         }
 
@@ -20,26 +20,104 @@ class AlarmClock {
         }
     }
 
-    removeClock = id => {
+    removeClock(id) {
         let newArr = this.alarmCollection.filter(e => e.id !== id);
         if (newArr.length === this.alarmCollection.length) {
             return 'Будильник с таким id не найден.';
         } else {
             this.alarmCollection = newArr;
-            return 'Будильник успешно удален.'
+            return 'Будильник успешно удалён.'
         }
     }
 
-    start = function() {
-        checkClock = function(alarm) {
-            if (alarm.alarmTime === getCurrentFormattedTime()) {
-                alarm.callback();
-            }
+    getCurrentFormattedTime() {
+        let now = new Date();
+        let hours = now.getHours() < 10 ? `0${now.getHours()}` : `${now.getHours()}`;
+        let minutes = now.getMinutes() < 10 ? `0${now.getMinutes()}` : `${now.getMinutes()}`;
+        return `${hours}:${minutes}`;
+    }
+
+    // start() {
+    //     let func = this.getCurrentFormattedTime;
+    //     function checkClock(alarm) {
+    //         if (alarm.alarmTime === func()) {
+    //             alarm.callback();
+    //         }
+    //     }
+
+    //     if (!this.timerId) {
+    //         this.timerId = setInterval(() => this.alarmCollection.forEach(e => checkClock(e)), 1000);
+    //     }
+    // }
+
+    start() {
+        if(!this.timerId) {
+            this.timerId = setInterval(() => this.alarmCollection.forEach(element => this.checkClock(element)), 1000);
         }
+    }
+
+    checkClock(element) {
+        if(element.time === this.getCurrentFormattedTime()) {
+          element.callback();
+        }
+    }
+
+    stop() {
+        if (this.timerId) {
+            clearInterval(this.timerId);
+            this.timerId = null;
+        }
+    }
+
+    printAlarms() {
+        console.log(`Печать всех будильников в количестве ${this.alarmCollection.length}`);
+        for (let e of this.alarmCollection) {
+            console.log (`Будильник №${e.id} заведён на ${e.time}`);
+        }
+    }
+
+    clearAlarms() {
+        stop();
+        this.alarmCollection = [];
     }
 }
 
-getCurrentFormattedTime = function() {
-    let now = new Date();
-    return `${now.getHours()}:${now.getMinutes()}`;
+function getFormattedTime(minutesToAdd) {
+    let time = new Date();
+    time.setMinutes(time.getMinutes() + minutesToAdd);
+    let hours = time.getHours() < 10 ? `0${time.getHours()}` : `${time.getHours()}`;
+    let minutes = time.getMinutes() < 10 ? `0${time.getMinutes()}` : `${time.getMinutes()}`;
+    return `${hours}:${minutes}`;
+}
+
+function testCase() {
+    let alarm1 = new AlarmClock();
+
+    alarm1.addClock(getFormattedTime(1), () => console.log('Пора вставать!\n(Будильник №1 сработал)'), 1);
+
+    alarm1.addClock(getFormattedTime(2), () => {
+        console.log('Вставай!\n(Будильник №2 сработал)');
+        alarm1.printAlarms();
+        alarm1.removeClock(2);
+        console.log('Будильник №2 удален');
+        alarm1.printAlarms();
+    }, 2);
+
+    alarm1.addClock(getFormattedTime(2), () => console.log('Вставай, а то проспишь!'), 1); // существующий id
+
+    alarm1.addClock(getFormattedTime(3), () => {
+        console.log('Вставай, а то проспишь!\n(Будильник №3 сработал)');
+        alarm1.printAlarms();
+        alarm1.clearAlarms();
+        console.log('Все будильники удалены');
+        alarm1.printAlarms();
+    }, 3);
+
+    alarm1.start();
+
+    try {
+        alarm1.addClock('09:01', () => console.log('Иди умываться!'));
+    } catch (err) {
+        console.error(err);
+    }
 }
